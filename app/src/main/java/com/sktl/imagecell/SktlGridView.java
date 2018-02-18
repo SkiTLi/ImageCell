@@ -2,7 +2,6 @@ package com.sktl.imagecell;
 
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.os.Build;
@@ -24,10 +23,28 @@ public class SktlGridView extends View {
     private Paint gridPaint = new Paint(); //типа кисти или карандаш (по идее должна быть однаб но не факт)
 
 
-    private int ImageWidth;
-    private int ImageHeight;
+
+//
+//    private int gridWidth= getWidth();
+//    private int gridHeight= getHeight();
+    private int gridWidth = 3;
+    private int gridHeight = 3;
+
+    public List<Integer> getArrayColumns() {
+        return arrayColumns;
+    }
+
+    public List<Integer> getArrayRows() {
+        return arrayRows;
+    }
+
+    private List<Integer> arrayColumns;
+    private List<Integer> arrayRows;
 
     private int lastVerticalLine;
+
+
+
     private int lastHorizontalLine;
 
     private int gridSpacing = 100;
@@ -40,7 +57,30 @@ public class SktlGridView extends View {
         this.gridSpacing = gridSpacing * 100;
     }
 
+    public int getGridWidth() {
+        return gridWidth;
+    }
 
+    public void setGridWidth(int gridWidth) {
+        this.gridWidth = gridWidth;
+    }
+
+    public int getGridHeight() {
+        return gridHeight;
+    }
+
+    public void setGridHeight(int gridHeight) {
+        this.gridHeight = gridHeight;
+    }
+
+
+    public int getLastVerticalLine() {
+        return lastVerticalLine;
+    }
+
+    public int getLastHorizontalLine() {
+        return lastHorizontalLine;
+    }
     //    @Override
 //    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 //        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -54,14 +94,14 @@ public class SktlGridView extends View {
 
 
         gridPaint.setAntiAlias(true); // для сглаживния
-        int color = ContextCompat.getColor(getContext(), R.color.colorPrimary);
+        int color = ContextCompat.getColor(getContext(), R.color.colorAccent);
         gridPaint.setColor(color);
 
 
 
 //        gridPaint.setStyle(Paint.Style.FILL); ///для заполнениия
         gridPaint.setStyle(Paint.Style.STROKE); ///для обводки
-
+        gridPaint.setStrokeWidth(5);//толщина линии
 
 
 
@@ -74,20 +114,20 @@ public class SktlGridView extends View {
 
         super.onDraw(canvas);
 
-        ImageWidth = getWidth();
-        ImageHeight = getHeight();
+//        gridWidth = getWidth();
+//        gridHeight = getHeight();
 
-        List<Integer> arrayColumns = new ArrayList<>();
+         arrayColumns = new ArrayList<>();
 
-        for (int i = 0; i < ImageWidth; i += this.getGridSpacing()) {
+        for (int i = 0; i < gridWidth; i += this.getGridSpacing()) {
             arrayColumns.add(i);
             lastVerticalLine=i;
         }
 
 
-        List<Integer> arrayRows = new ArrayList<>();
+         arrayRows = new ArrayList<>();
 
-        for (int j = 0; j < ImageHeight; j += this.getGridSpacing()) {
+        for (int j = 0; j < gridHeight; j += this.getGridSpacing()) {
             arrayRows.add(j);
             lastHorizontalLine=j;
         }
