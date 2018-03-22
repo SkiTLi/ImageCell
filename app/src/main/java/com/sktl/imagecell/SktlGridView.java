@@ -22,7 +22,13 @@ import java.util.List;
 public class SktlGridView extends View {
     private Paint gridPaint = new Paint(); //типа кисти или карандаш (по идее должна быть однаб но не факт)
 
+    private List<Integer> arrayColumns;
+    private List<Integer> arrayRows;
 
+    private int lastVerticalLine;
+    private int lastHorizontalLine;
+
+    private int gridSpacing = 100;
 
 //
 //    private int gridWidth= getWidth();
@@ -37,17 +43,6 @@ public class SktlGridView extends View {
     public List<Integer> getArrayRows() {
         return arrayRows;
     }
-
-    private List<Integer> arrayColumns;
-    private List<Integer> arrayRows;
-
-    private int lastVerticalLine;
-
-
-
-    private int lastHorizontalLine;
-
-    private int gridSpacing = 100;
 
     public int getGridSpacing() {
         return gridSpacing;

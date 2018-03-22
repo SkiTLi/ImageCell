@@ -1,19 +1,17 @@
 package com.sktl.imagecell;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.design.widget.BottomNavigationView;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -21,7 +19,9 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements View.OnTouchListener {
+import static java.lang.String.valueOf;
+
+public class MainActivity extends Activity implements View.OnTouchListener {
 
     float x;
     float y;
@@ -34,56 +34,84 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     float widthImage;
     float heightImage;
 
+    private Button mButton;
     private TextView mTextMessage;
+    private TextView mTextVersion;
     private ImageView mImage;
     private SktlGridView mGrid;
-    private Spinner spinner;
+    private Spinner mSpinner;
 
     private int SKTL_REQUEST_CODE = 1;
 
-    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
-            = new BottomNavigationView.OnNavigationItemSelectedListener() {
 
-        @Override
-        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-            switch (item.getItemId()) {
-                case R.id.navigation_home:
-                    spinner.setVisibility(View.INVISIBLE);
-                    mTextMessage.setText(R.string.title_home);
-                    Intent intent = new Intent();
-                    intent.setType("image/*");
-                    intent.setAction(Intent.ACTION_GET_CONTENT);
-                    startActivityForResult(Intent.createChooser(intent, "select Picture"),
-                            SKTL_REQUEST_CODE);
-                    return true;
-                case R.id.navigation_dashboard:
-                    mTextMessage.setText(R.string.title_dashboard);
-                    Log.d("eee", "mGrid.getGridSpacing()=" + mGrid.getGridSpacing());
-                    mGrid.setGridWidth(mImage.getWidth());
-                    mGrid.setGridHeight(mImage.getHeight());
-                    mGrid.invalidate();//перерисовывает view
-                    Log.d("eee", "mGrid.getGridSpacing()=" + mGrid.getGridSpacing());
-                    //getWidth/getHeight нельзя вызывать сразу в onCreate (покажет 0)
-                    widthImage = mImage.getWidth();
-                    heightImage = mImage.getHeight();
-//                    mTextMessage.setText("WidthImage=" + widthImage
-//                            + ", HeightImage=" + heightImage
-//                            + "\n"
-//                            + "WidthGrid=" + mGrid.getGridWidth()
-//                            + ", GridHeight=" + mGrid.getGridHeight());
-                    spinner.setVisibility(View.VISIBLE);
-                    spinner.bringToFront();
-                    mGrid.setGridSpacing(spinner.getSelectedItemPosition() + 1);
-                    return true;
-                case R.id.navigation_notifications:
-                    spinner.setVisibility(View.INVISIBLE);
-                    mTextMessage.setText(R.string.title_notifications);
-                    mTextMessage.setText(String.valueOf(getNumberOfCell(xPress, yPress)));
-                    return true;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main3);
+
+        mTextVersion = (TextView) findViewById(R.id.version);
+        mTextVersion.setText(BuildConfig.VERSION_NAME);
+
+        //загружаем картинку из галереи по нажатию на кнопку
+        mButton = (Button) findViewById(R.id.load_button);
+        mButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent, "select Picture"),
+                        SKTL_REQUEST_CODE);
             }
-            return false;
-        }
-    };
+        });
+
+
+        mGrid = (SktlGridView) findViewById(R.id.GridSktl_View);
+        mGrid.setOnTouchListener(this);
+        mTextMessage = (TextView) findViewById(R.id.message);
+
+
+        mImage = (ImageView) findViewById(R.id.image);
+        mImage.setImageResource(R.drawable.fourh);
+        mTextMessage.bringToFront();
+        // адаптер
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, data);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        mSpinner = (Spinner) findViewById(R.id.spinner);
+        mSpinner.setAdapter(adapter);
+        // заголовок
+//        mSpinner.setPrompt("Title");
+        // выделяем элемент
+        mSpinner.setSelection(0);
+
+//        spinner.setVisibility(View.INVISIBLE);
+        // устанавливаем обработчик нажатия
+        mSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view,
+                                       int position, long id) {
+                // показываем позиция нажатого элемента
+                // Toast.makeText(getBaseContext(), "Position = " + position, Toast.LENGTH_SHORT).show();
+                mGrid.setGridSpacing(mSpinner.getSelectedItemPosition() + 1);
+
+                mGrid.setGridWidth(mImage.getWidth());
+                mGrid.setGridHeight(mImage.getHeight());
+                mGrid.invalidate();//перерисовывает view
+//                widthImage = mImage.getWidth();
+//                heightImage = mImage.getHeight();
+//                mTextMessage.setText("WI=" + widthImage
+//                        + ", HI=" + heightImage
+//                        + ", WG=" + mGrid.getGridWidth()
+//                        + ", HG=" + mGrid.getGridHeight());
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+            }
+        });
+    }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -98,47 +126,6 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                 e.printStackTrace();
             }
         }
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        mGrid = (SktlGridView) findViewById(R.id.GridSktl_View);
-        mGrid.setOnTouchListener(this);
-        mTextMessage = (TextView) findViewById(R.id.message);
-        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
-        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
-        mImage = (ImageView) findViewById(R.id.image);
-        mImage.setImageResource(R.drawable.fourh);
-        mTextMessage.bringToFront();
-        // адаптер
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, data);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-        spinner = (Spinner) findViewById(R.id.spinner);
-        spinner.setAdapter(adapter);
-        // заголовок
-        spinner.setPrompt("Title");
-        // выделяем элемент
-        spinner.setSelection(0);
-
-        spinner.setVisibility(View.INVISIBLE);
-        // устанавливаем обработчик нажатия
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view,
-                                       int position, long id) {
-                // показываем позиция нажатого элемента
-                // Toast.makeText(getBaseContext(), "Position = " + position, Toast.LENGTH_SHORT).show();
-                mGrid.setGridSpacing(spinner.getSelectedItemPosition() + 1);
-                mGrid.invalidate();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> arg0) {
-            }
-        });
     }
 
     @Override
@@ -159,6 +146,10 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
                     xPress = x;
                     yPress = y;
                 }
+
+                //для моментального отображения
+                mTextMessage.setText(getNumberOfCell(xPress, yPress));
+
                 break;
             case MotionEvent.ACTION_MOVE: // движение
                 break;
@@ -171,8 +162,9 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     }
 
 
-    public int getNumberOfCell(float x, float y) {
+    public String getNumberOfCell(float x, float y) {
         int n = 0;
+        String result = "click on the cell";
         List<Integer> xGrid = mGrid.getArrayColumns();
         List<Integer> yGrid = mGrid.getArrayRows();
         Log.d("eee", "xGrid=" + xGrid + ", yGrid=" + yGrid);
@@ -180,6 +172,7 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
             if (x < elX) {
                 n = elX / mGrid.getGridSpacing();
                 Log.d("eee", "n=elX/mGrid.getGridSpacing()=" + n);
+                result = "cell number " + valueOf(n);
                 break;
             }
         }
@@ -187,16 +180,18 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
             if (y < elY) {
                 n = n + ((int) (elY / mGrid.getGridSpacing())) * (xGrid.size() - 1) - (xGrid.size() - 1);
                 Log.d("eee", "n=n+elY/mGrid.getGridSpacing()=" + n);
+                result = "cell number " + valueOf(n);
                 break;
             }
         }
         if (x > mGrid.getLastVerticalLine() || y > (float) mGrid.getLastHorizontalLine()) {
-            n = 8888;
+            result = "you missed!";
         }
         if (x == 0 && y == 0) {
             n = 0;
+            result = "cell number " + valueOf(n);
         }
-        return n;
+        return result;
     }
 
 
